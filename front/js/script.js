@@ -26,7 +26,7 @@ const showProducts = async () => {
         */
         products.map(product => (
             `          
-                <a href="./product.html?id=42">
+                <a href="./product.html?id=${product._id}">
                     <article>
                         <img src="${product.imageUrl}" alt="${product.altTxt}" />
                         <h3 class="productName">${product.name}</h3>
