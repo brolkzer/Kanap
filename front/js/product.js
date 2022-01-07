@@ -11,7 +11,6 @@ let product;
 
 const fetchProduct = async () => {
     product = await fetch(`http://localhost:3000/api/products/${urlId}`).then(res =>res.json());
-    console.log(product)
 };
 
 const showProduct = async () => {
