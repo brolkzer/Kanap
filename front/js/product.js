@@ -15,29 +15,64 @@ const fetchProduct = async () => {
 
 const showProduct = async () => {
     await fetchProduct();
-    const productClrs = product.colors
+    const productClrs = product.colors;
 
     productImage.innerHTML = `<img src="${product.imageUrl}" alt="${product.altTxt}">`;
     productName.innerText = `${product.name}`;
     productPrice.innerText = `${product.price}`;
     productDescription.innerText = `${product.description}`;
     productColors.innerHTML = (
-
         `<option value="">--SVP, choisissez une couleur --</option>`
         +
         productClrs.map(color => (
             `<option value="=${color}">${color}</option>`
-        ))
-        
+        ))        
     );
 };
 
 showProduct();
 
+const inputColor = document.getElementById('colors')
+let productColor = "";
+
+inputColor.addEventListener('input', (e) => {
+    productColor = (e.target.value.substr(1));
+    console.log(productColor)
+});
+
+const inputNumber = document.getElementById('quantity')
+let productNumber = "";
+
+inputNumber.addEventListener('input', (e) => {
+    productNumber = e.target.value;
+    console.log(productNumber)
+});
 
 
+let productFeatures = {
+    name: product.name,
+    id: product._id,
+    color: productColor,
+    quantity: productNumber,
+    price: product.price,
+};
+console.log(productFeatures);
 
 
+// let cart = [];
+
+// const addToCart = async () => {
+//     await showProduct();
+
+//     const addBtn = document.getElementById('addToCart');
+
+//     addBtn.addEventListener('click', () => { 
+//         localStorage.setItem(`${product.name}` + ' ' + productColor, productNumber);
+//         alert('Article ajouté dans votre panier');
+//     })
+// }
+
+// addToCart();
 
 
 
