@@ -21,9 +21,7 @@ const showProduct = async () => {
     productName.innerText = `${product.name}`;
     productPrice.innerText = `${product.price}`;
     productDescription.innerText = `${product.description}`;
-    productColors.innerHTML = (
-        `<option value="">--SVP, choisissez une couleur --</option>`
-        +
+    productColors.innerHTML += (
         productClrs.map(color => (
             `<option value="=${color}">${color}</option>`
         ))        
