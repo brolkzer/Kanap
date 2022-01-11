@@ -48,29 +48,27 @@ inputNumber.addEventListener('input', (e) => {
 
 
 let productFeatures = {
-    name: product.name,
     id: product._id,
     color: productColor,
     quantity: productNumber,
-    price: product.price,
 };
-console.log(productFeatures);
+// console.log(productFeatures);
 
 
-// let cart = [];
+let cart = [];
 
-// const addToCart = async () => {
-//     await showProduct();
+const addToCart = async () => {
+    await showProduct();
 
-//     const addBtn = document.getElementById('addToCart');
+    const addBtn = document.getElementById('addToCart');
 
-//     addBtn.addEventListener('click', () => { 
-//         localStorage.setItem(`${product.name}` + ' ' + productColor, productNumber);
-//         alert('Article ajouté dans votre panier');
-//     })
-// }
+    addBtn.addEventListener('click', () => { 
+        localStorage.setItem(`${product._id}` + ' ' + productColor, productNumber);
+        alert('Article ajouté dans votre panier');
+    })
+}
 
-// addToCart();
+addToCart();
 
 
 
