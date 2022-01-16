@@ -46,29 +46,62 @@ inputNumber.addEventListener('input', (e) => {
     console.log(productNumber)
 });
 
+let localCart = [];
 
-let productFeatures = {
-    id: product._id,
-    color: productColor,
-    quantity: productNumber,
-};
-// console.log(productFeatures);
-
-
-let cart = [];
-
-const addToCart = async () => {
-    await showProduct();
-
-    const addBtn = document.getElementById('addToCart');
-
-    addBtn.addEventListener('click', () => { 
-        localStorage.setItem(`${product._id}` + ' ' + productColor, productNumber);
-        alert('Article ajouté dans votre panier');
-    })
+function updateCart() {
+    if (JSON.parse(localStorage.getItem('products'))) {
+        localCart = JSON.parse(localStorage.getItem('products'))
+    } else {
+        localCart = [];
+    }
 }
 
-addToCart();
+function storeCart() {
+    localStorage.products = JSON.stringify(localCart);
+};
 
+const addToLocalCart = async () => {
+    await fetchProduct();
+    await updateCart();
+    
+    let productFeatures = {
+        id: `${product._id}`,
+        color: productColor,
+        quantity: productNumber,
+        name: `${product.name}`,
+        image: `${product.imageUrl}`,
+        altTxt: `${product.altTxt}`
+    };
 
+    let foundProduct = localCart.find((p) => p.id == `${product._id}`);
+    let foundColor = localCart.find((p) => p.color == productColor);
+    let foundProductColor = localCart.filter((p) => p.color == productColor).find((p) => p.id == `${product._id}`);
 
+    if (foundProduct != undefined && foundColor != undefined) {
+        console.log('déjà stocké');
+        foundProductColor.quantity = eval(parseInt(foundProductColor.quantity) + parseInt(productNumber));
+        storeCart();
+
+    } else if (foundProduct != undefined) {
+        console.log('stocké mais pas cette couleur');
+        localCart.push(productFeatures);
+        storeCart();
+
+    } else {
+        console.log('pas stocké')
+        localCart.push(productFeatures);
+        storeCart();
+    } 
+};
+
+const addBtn = document.getElementById('addToCart');
+
+addBtn.addEventListener('click', () => {
+    if (productColor && productNumber && productNumber != 0 && productNumber < 101) {
+        addToLocalCart();
+    } else {
+        alert('Veuillez choisir la couleur de l\'article et le nombre d\'article.')
+    }
+});
+
+let filterArrayColorAndId = "";

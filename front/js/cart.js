@@ -1,63 +1,55 @@
-function saveCart (cart) {
-    localStorage.setItem("cart", JSON.stringify(cart));
-}
+let cartItems = document.getElementById('cart__items');
+let cart = JSON.parse(localStorage.getItem('products'));
+const items = document.getElementById("items");
+let products;
 
-function getCart () {
-    let cart = localStorage.getItem("cart");
-    if (cart ==nul) {
-        return [];
-    }
-    else {
-        return JSON.parse(cart);
-    }
-}
+const fetchProducts = async () => {
+    /**
+     * Request data from api as a json file
+     * @param { string } Url
+     */
+    products = await fetch("http://localhost:3000/api/products").then(res => res.json());
+};
 
-function addCart (product) {
-    let cart = getCart();
-    let foundProduct = cart.find(p => p.id == product.id);
-    if (foundProduct != undefined) {
-        foundProduct.quantity++
-    } else {
-        product.quantity = 1;
-        cart.push(product);
-    }
-    saveCart(cart);
-}
+fetchProducts();
 
-function removeCart (product) {
-    let cart = getCart();
-    cart = cart.filter(p => p.id != product.id);
-    saveCart(cart);
-}
-
-function changeQuantity (product,quantity) {
-    let cart = getcart();
-    let foundProduct = cart.find(p => p.id == product.id);
-    if (foundProduct != undefined) {
-        foundProduct.quantity += quantity;
-        if (foundProduct.quantity <= 0) {
-            removeCart(foundProduct)
-        } else {
-            saveCart(cart)
-        }        
+const fetchPrice = async () => {
+    
+    for (const prod of cart) {
+        await fetch(`http://localhost:3000/api/products/${prod.id}`).then(res => res.json()).then((data) => console.log(data.price));
     }
 }
+fetchPrice();
 
-function getProdutNumber () {
-    let cart = getCart();
-    let number = 0;
-    for ( let product of cart) {
-        number += product.quantity;
-    }
-    return number;
-}
 
-function totalPrice () {
-    let cart = getCart();
-    let total = 0;
-    for ( let product of cart) {
-        tal += product.quantity * product.price;
-    }
-    return total; 
-}
+const showCart = async () => {
+    await fetchProducts();
 
+    cartItems.innerHTML = (
+        cart.map(prod => (
+
+            `<article class="cart__item" data-id="${prod.id}" data-color="${prod.color}">
+            <div class="cart__item__img">
+              <img src="${prod.image}" alt="${prod.altTxt}">
+            </div>
+            <div class="cart__item__content">
+              <div class="cart__item__content__description">
+                <h2>${prod.name}</h2>
+                <p>${prod.color}</p>
+                <p>42,00 € </p>
+              </div>
+              <div class="cart__item__content__settings">
+                <div class="cart__item__content__settings__quantity">
+                  <p>Qté : ${prod.quantity}</p>
+                  <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${prod.quantity}">
+                </div>
+                <div class="cart__item__content__settings__delete">
+                  <p class="deleteItem">Supprimer</p>
+                </div>
+              </div>
+            </div>
+          </article>`
+        ))
+    )
+};
+showCart();
