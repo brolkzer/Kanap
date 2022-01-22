@@ -68,16 +68,13 @@ const addToLocalCart = async () => {
         id: `${product._id}`,
         color: productColor,
         quantity: productNumber,
-        name: `${product.name}`,
-        image: `${product.imageUrl}`,
-        altTxt: `${product.altTxt}`
     };
 
     let foundProduct = localCart.find((p) => p.id == `${product._id}`);
     let foundColor = localCart.find((p) => p.color == productColor);
     let foundProductColor = localCart.filter((p) => p.color == productColor).find((p) => p.id == `${product._id}`);
 
-    if (foundProduct != undefined && foundColor != undefined) {
+    if (foundProductColor != undefined) {
         console.log('déjà stocké');
         foundProductColor.quantity = eval(parseInt(foundProductColor.quantity) + parseInt(productNumber));
         storeCart();
@@ -103,5 +100,3 @@ addBtn.addEventListener('click', () => {
         alert('Veuillez choisir la couleur de l\'article et le nombre d\'article.')
     }
 });
-
-let filterArrayColorAndId = "";
