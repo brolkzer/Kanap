@@ -13,9 +13,32 @@ const fetchProducts = async () => {
 
 fetchProducts();
 
+async function getCartTotalQuantityOnLoad() {
+  let cart = JSON.parse(localStorage.getItem('products'));
+  let itemsQuantity = 0;
+
+  for (const product of cart) {
+    eval(itemsQuantity += parseInt(product.quantity))
+  }
+  document.getElementById('totalQuantity').innerText = itemsQuantity;
+}
+
+async function getCartTotalPriceOnLoad() {  
+  let cart = JSON.parse(localStorage.getItem('products'));
+  let itemsPrice = 0;
+  let eachItemPrice = 0;
+
+  for (const product of cart)  {
+    eachItemPrice = await fetch(`http://localhost:3000/api/products/${product.id}`).then(res => res.json()).then((data) => data.price)
+    eval(itemsPrice += parseInt(product.quantity) * parseInt(eachItemPrice))
+  }
+  document.getElementById('totalPrice').innerText = itemsPrice;
+}
 
 const showCart = async () => {
   await fetchProducts();
+  await getCartTotalQuantityOnLoad();
+  await getCartTotalPriceOnLoad();
 
   let productData = "";
 
@@ -45,7 +68,7 @@ const showCart = async () => {
                   </div>
                 </div>
               </article>`        
-    )
+    )  
   } 
 
   const modifyCart = async () =>  {  
@@ -62,8 +85,7 @@ const showCart = async () => {
 
         let foundProductCart = cart.find((p) => p.id == prodIdInput);
         let foundColorCart = cart.find((p) => p.color == prodColorInput);
-        let foundProductColorCart = cart.filter((p) => p.color == prodColorInput).find((p) => p.id == prodIdInput);
-        
+        let foundProductColorCart = cart.filter((p) => p.color == prodColorInput).find((p) => p.id == prodIdInput);        
 
         const fetchPrice = async () => {
           priceProduct = await fetch(`http://localhost:3000/api/products/${prodIdInput}`).then(res => res.json()).then((data) => data.price);
@@ -73,20 +95,54 @@ const showCart = async () => {
           const i = cart.findIndex((p) => p.id == prodIdInput && p.color == prodColorInput);
           cart[i].quantity = e.target.value
           localStorage.products = JSON.stringify(cart);
-        }        
-  
+        }
+        
+        function deleteQuantity() {
+          cart = cart.filter((p) => p.id != prodIdInput || p.color != prodColorInput);
+          localStorage.products = JSON.stringify(cart);
+          location.reload()
+        }
+
+        function getCartTotalQuantity() {
+          let cart = JSON.parse(localStorage.getItem('products'));
+          let itemsQuantity = 0;
+
+          for (const product of cart) {
+            eval(itemsQuantity += parseInt(product.quantity))
+          }
+          return itemsQuantity;
+        }
+
+        async function getCartTotalPrice() {  
+          let cart = JSON.parse(localStorage.getItem('products'));
+          let itemsPrice = 0;
+          let eachItemPrice = 0;
+          let totalItemsPrice = 0;
+        
+          for (const product of cart)  {
+            eachItemPrice = await fetch(`http://localhost:3000/api/products/${product.id}`).then(res => res.json()).then((data) => data.price)
+            itemsPrice += eval(parseInt(product.quantity) * parseInt(eachItemPrice))
+          }
+          console.log(itemsPrice)
+          console.log(typeof itemsPrice)
+          totalItemsPrice = itemsPrice;
+          document.getElementById('totalPrice').innerText = totalItemsPrice;
+        }
+
         if (foundProductColorCart != undefined) {
-          const priceDisplay = document.querySelector('.cart__item__content__description p:last-child')
-          const quantityDisplay = document.querySelector('.cart__item__content__settings__quantity p')
-          foundColorCart.quantity = e.target.value;
+          let priceDisplay = e.target.closest(".cart__item__content").querySelector('.cart__item__content__description').querySelector('p:last-child')          
+          let quantityDisplay = e.target.closest(".cart__item__content").querySelector('.cart__item__content__settings').querySelector('.cart__item__content__settings__quantity').querySelector('p')
           updateQuantityCart();
           fetchPrice()
           .then(() => priceDisplay.innerHTML = eval(foundProductColorCart.quantity * priceProduct) + "€")
-          .then(() => quantityDisplay.innerHTML = foundProductColorCart.quantity)
+          .then(() => quantityDisplay.innerHTML = `Qté : ` + foundProductColorCart.quantity)
+          .then(() => document.getElementById('totalQuantity').innerText = eval(getCartTotalQuantity()))
+          .then(() => getCartTotalPrice())         
           
-          
-          if (foundProductColorCart.quantity < 0) {
-            // supprimer l'objet
+          if (foundProductColorCart.quantity <= 0) {
+            deleteQuantity();
+            getCartTotalQuantity();
+            getCartTotalPrice();
           }
         }
       })
@@ -97,28 +153,25 @@ const showCart = async () => {
         let cart = JSON.parse(localStorage.getItem('products'));
         let prodId = e.target.closest(".cart__item").dataset.id;
         let prodColor = e.target.closest(".cart__item").dataset.color;
-        // console.log(cart)
-        // console.log(e.target.closest(".cart__item").dataset.id)
-        // console.log(e.target.closest(".cart__item").dataset.color)
+
         let foundProductCart = cart.find((p) => p.id == `${prodId}`);
         let foundColorCart = cart.find((p) => p.color == `${prodColor}`);
         let foundProductColorCart = cart.filter((p) => p.color == `${prodColor}`).find((p) => p.id == `${prodId}`);
-        console.log(foundProductColorCart);
-        console.log(foundColorCart);
-        console.log(foundProductCart)
 
-        if (foundProductCart =! undefined && foundColorCart != undefined) { 
-          // cart.filter()
-          // updateQuantityCart();
-          // location.reload();
+        function deleteProduct() {
+          cart = cart.filter((p) => p.id != prodId || p.color != prodColor);
+          localStorage.products = JSON.stringify(cart);
+          location.reload()
+        }
+
+        if (foundProductColorCart != undefined) {
+          deleteProduct();
+          getCartTotalQuantity();
         }
       })
     })
-
-
-
   }
-  modifyCart()
+  modifyCart();
+
 }
 showCart();
-
