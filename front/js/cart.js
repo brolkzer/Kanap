@@ -32,7 +32,7 @@ async function getCartTotalPriceOnLoad() {
     eachItemPrice = await fetch(`http://localhost:3000/api/products/${product.id}`).then(res => res.json()).then((data) => data.price)
     eval(itemsPrice += parseInt(product.quantity) * parseInt(eachItemPrice))
   }
-  document.getElementById('totalPrice').innerText = itemsPrice;
+  document.getElementById('totalPrice').innerText = new Intl.NumberFormat('fr-FR').format(itemsPrice);
 }
 
 const showCart = async () => {
@@ -42,8 +42,9 @@ const showCart = async () => {
 
   let productData = "";
 
-  for (const prod of cart) {
+  for (const prod of cart.sort((a, b) => b.id < a.id)) {
       productData = await fetch(`http://localhost:3000/api/products/${prod.id}`).then(res => res.json());
+      cart = cart;
       
       cartItems.innerHTML += (        
 
@@ -55,7 +56,7 @@ const showCart = async () => {
                   <div class="cart__item__content__description">
                     <h2>${productData.name}</h2>
                     <p>${prod.color}</p>
-                    <p>${productData.price * prod.quantity} €</p>
+                    <p>${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(eval(productData.price * prod.quantity))}</p>
                   </div>
                   <div class="cart__item__content__settings">
                     <div class="cart__item__content__settings__quantity">
@@ -123,10 +124,8 @@ const showCart = async () => {
             eachItemPrice = await fetch(`http://localhost:3000/api/products/${product.id}`).then(res => res.json()).then((data) => data.price)
             itemsPrice += eval(parseInt(product.quantity) * parseInt(eachItemPrice))
           }
-          console.log(itemsPrice)
-          console.log(typeof itemsPrice)
           totalItemsPrice = itemsPrice;
-          document.getElementById('totalPrice').innerText = totalItemsPrice;
+          document.getElementById('totalPrice').innerText = new Intl.NumberFormat('fr-FR').format(totalItemsPrice);
         }
 
         if (foundProductColorCart != undefined) {
@@ -134,7 +133,7 @@ const showCart = async () => {
           let quantityDisplay = e.target.closest(".cart__item__content").querySelector('.cart__item__content__settings').querySelector('.cart__item__content__settings__quantity').querySelector('p')
           updateQuantityCart();
           fetchPrice()
-          .then(() => priceDisplay.innerHTML = eval(foundProductColorCart.quantity * priceProduct) + "€")
+          .then(() => priceDisplay.innerHTML = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(eval(foundProductColorCart.quantity * priceProduct)))
           .then(() => quantityDisplay.innerHTML = `Qté : ` + foundProductColorCart.quantity)
           .then(() => document.getElementById('totalQuantity').innerText = eval(getCartTotalQuantity()))
           .then(() => getCartTotalPrice())         
@@ -175,3 +174,157 @@ const showCart = async () => {
 
 }
 showCart();
+
+const formInputs = document.querySelectorAll('input[type="text"], input[type="email"]');
+const form = document.querySelector('.cart__order__form')
+
+let firstName, lastName, address, city, email;
+
+const errorDisplay = (tag, message, valid) => {
+  const errorMsg = document.getElementById(tag + 'ErrorMsg');
+
+  if (!valid) {
+    errorMsg.textContent = message
+  } else {
+    errorMsg.textContent = message
+  }
+}
+
+const firstNameChecker = (value) => {
+  if (value.length > 0 && value.length < 3 || value.length > 20) {
+    errorDisplay("firstName", "Le prénom doit faire entre 3 et 20 caractères");
+    firstName = null;
+  } else if (!value.match(/^[a-zA-Z0-9_.-]*$/)) {
+    errorDisplay("firstName", "Le prénom ne doit pas contenir de caractères spéciaux");
+    firstName = null;
+  } else {
+    errorDisplay("firstName", "", true);
+    firstName = value;
+  }
+}
+
+const lastNameChecker = (value) => {
+  if (value.length > 0 && value.length < 3 || value.length > 20) {
+    errorDisplay("lastName", "Le nom de famille doit faire entre 3 et 20 caractères");
+    lastName = null;
+  } else if (!value.match(/^[a-zA-Z0-9_.-]*$/)) {
+    errorDisplay("lastName", "Le nom de famille ne doit pas contenir de caractères spéciaux");
+    lastName = null;
+  } else {
+    errorDisplay("lastName", "", true);
+    lastName = value;
+  }
+}
+
+const addressChecker = (value) => {
+  if (value.length > 0 && value.length < 3 || value.length > 50) {
+    errorDisplay("address", "L'adresse doit faire entre 3 et 50 caractères");
+    address = null;
+  } else {
+    errorDisplay("address", "", true);
+    address = value;
+  }
+}
+
+const cityChecker = (value) => {
+  if (value.length > 0 && value.length < 3 || value.length > 20) {
+    errorDisplay("city", "Le nom de la ville doit faire entre 3 et 20 caractères");
+    city = null;
+  } else if (!value.match(/^[a-zA-Z0-9_.-]*$/)) {
+    errorDisplay("city", "Le nom de la ville ne doit pas contenir de caractères spéciaux");
+    city = null;
+  } else {
+    errorDisplay("city", "", true);
+    city = value;
+  }
+}
+
+const emailChecker = (value) => {
+  if (!value.match(/^[\w_-]+@[\w-]+\.[a-z]{2,4}$/i)) {
+    errorDisplay("email", "Le mail n'est pas valide");
+    email = null;
+  } else {
+    errorDisplay ("email", "", true);
+    email = value;
+  }
+}
+
+formInputs.forEach((formInput) => {
+  formInput.addEventListener('input', (e) => {
+    switch (e.target.id) {
+      case "firstName":
+        firstNameChecker(e.target.value);
+        break;
+
+      case "lastName":
+        lastNameChecker(e.target.value)  ;
+        break;
+
+      case "address":
+        addressChecker(e.target.value);
+        break;
+
+      case "city":
+        cityChecker(e.target.value);
+        break;
+
+      case "email":
+        emailChecker(e.target.value);
+        break;
+
+      default:
+        null;
+    }
+  })
+})
+
+
+
+
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const contact = {firstName, lastName, address, city, email};
+
+  let cart = JSON.parse(localStorage.getItem('products'));
+  let products = [];
+  for (i = 0; i < cart.length; i++ ) {
+    products += cart[i].id;
+  }
+  products = products.match(/.{1,32}/g);
+
+  const postData = {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-type": "application/json"
+    },
+
+    body: JSON.stringify({contact, products}),
+  };
+
+  
+  if (firstName && lastName && address && city && email) {
+    window.location.href='http://127.0.0.1:5500/front/html/confirmation.html';
+
+    const cartPost = async () => {
+      dataPost = await fetch("http://localhost:3000/api/products/order", postData);
+
+      const dataResponse = await dataPost.json();
+      console.log(dataResponse);
+      console.log(dataResponse.orderId)
+    }
+    cartPost(); 
+    
+    formInputs.forEach((formInput) => (formInput.value) = "");
+    firstName = null;
+    lastName = null;
+    address = null;
+    city = null;
+    email = null;
+
+
+  } else {
+    alert('Veuillez remplir correctement les champs')
+  }
+})
