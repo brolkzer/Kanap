@@ -1,0 +1,1 @@
+document.getElementById('orderId').innerText = document.location.search.substr(1);

@@ -84,8 +84,6 @@ const showCart = async () => {
         let prodIdInput = e.target.closest(".cart__item").dataset.id;
         let prodColorInput = e.target.closest(".cart__item").dataset.color;
 
-        let foundProductCart = cart.find((p) => p.id == prodIdInput);
-        let foundColorCart = cart.find((p) => p.color == prodColorInput);
         let foundProductColorCart = cart.filter((p) => p.color == prodColorInput).find((p) => p.id == prodIdInput);        
 
         const fetchPrice = async () => {
@@ -129,8 +127,8 @@ const showCart = async () => {
         }
 
         if (foundProductColorCart != undefined) {
-          let priceDisplay = e.target.closest(".cart__item__content").querySelector('.cart__item__content__description').querySelector('p:last-child')          
-          let quantityDisplay = e.target.closest(".cart__item__content").querySelector('.cart__item__content__settings').querySelector('.cart__item__content__settings__quantity').querySelector('p')
+          let priceDisplay = e.target.closest(".cart__item__content").querySelector('.cart__item__content__description > p:last-child');         
+          let quantityDisplay = e.target.closest(".cart__item__content").querySelector(".cart__item__content__settings > .cart__item__content__settings__quantity > p");
           updateQuantityCart();
           fetchPrice()
           .then(() => priceDisplay.innerHTML = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(eval(foundProductColorCart.quantity * priceProduct)))
@@ -153,8 +151,6 @@ const showCart = async () => {
         let prodId = e.target.closest(".cart__item").dataset.id;
         let prodColor = e.target.closest(".cart__item").dataset.color;
 
-        let foundProductCart = cart.find((p) => p.id == `${prodId}`);
-        let foundColorCart = cart.find((p) => p.color == `${prodColor}`);
         let foundProductColorCart = cart.filter((p) => p.color == `${prodColor}`).find((p) => p.id == `${prodId}`);
 
         function deleteProduct() {
@@ -276,11 +272,7 @@ formInputs.forEach((formInput) => {
         null;
     }
   })
-})
-
-
-
-
+});
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -288,10 +280,10 @@ form.addEventListener("submit", (e) => {
 
   let cart = JSON.parse(localStorage.getItem('products'));
   let products = [];
+
   for (i = 0; i < cart.length; i++ ) {
-    products += cart[i].id;
+    products.push(cart[i].id);
   }
-  products = products.match(/.{1,32}/g);
 
   const postData = {
     method: "POST",
@@ -305,25 +297,18 @@ form.addEventListener("submit", (e) => {
 
   
   if (firstName && lastName && address && city && email) {
-    window.location.href='http://127.0.0.1:5500/front/html/confirmation.html';
-
+    
     const cartPost = async () => {
       dataPost = await fetch("http://localhost:3000/api/products/order", postData);
-
+      
       const dataResponse = await dataPost.json();
       console.log(dataResponse);
       console.log(dataResponse.orderId)
+      window.location.href=`http://127.0.0.1:5500/front/html/confirmation.html?${dataResponse.orderId}`;
     }
     cartPost(); 
     
-    formInputs.forEach((formInput) => (formInput.value) = "");
-    firstName = null;
-    lastName = null;
-    address = null;
-    city = null;
-    email = null;
-
-
+    
   } else {
     alert('Veuillez remplir correctement les champs')
   }
