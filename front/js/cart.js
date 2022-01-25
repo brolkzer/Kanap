@@ -5,7 +5,7 @@ let products;
 
 const fetchProducts = async () => {
     /**
-     * Request data from api as a json file
+     * Fetch for all the products listed on the API
      * @param { string } Url
      */
     products = await fetch("http://localhost:3000/api/products").then(res => res.json());
@@ -14,6 +14,14 @@ const fetchProducts = async () => {
 fetchProducts();
 
 async function getCartTotalQuantityOnLoad() {
+  /**
+   * get the localStorage content to give it to cart, 
+   * for each element of cart add the quantity amount 
+   * then display the result to the user
+   * @param { Array.<object> }
+   * @param { number } quantity
+   * @param { number } itemsQuantity
+   */
   let cart = JSON.parse(localStorage.getItem('products'));
   let itemsQuantity = 0;
 
@@ -23,7 +31,17 @@ async function getCartTotalQuantityOnLoad() {
   document.getElementById('totalQuantity').innerText = itemsQuantity;
 }
 
-async function getCartTotalPriceOnLoad() {  
+async function getCartTotalPriceOnLoad() {
+  /**
+   * get the localStorage content to give it to cart, 
+   * for each element of cart fetch it's price 
+   * and compute it's price with it's quantity, 
+   * then display the price to the user
+   * @param { Array.<object> } 
+   * @param { string } Url
+   * @param { number } quantity
+   * @param { number } price
+   */
   let cart = JSON.parse(localStorage.getItem('products'));
   let itemsPrice = 0;
   let eachItemPrice = 0;
@@ -41,6 +59,19 @@ const showCart = async () => {
   await getCartTotalPriceOnLoad();
 
   let productData = "";
+
+  /** 
+   * Create a HTML element "article" for each product saved in the localStorage 
+   * and sorts it by it's ID 
+   * then fills it with data fecthed from API
+   * @param { string } Url
+   * @param { string } id
+   * @param { string } color
+   * @param { string } imageUrl
+   * @param { string } altTxt
+   * @param { string } name
+   * @param { string } price
+   */
 
   for (const prod of cart.sort((a, b) => b.id < a.id)) {
       productData = await fetch(`http://localhost:3000/api/products/${prod.id}`).then(res => res.json());
@@ -87,22 +118,54 @@ const showCart = async () => {
         let foundProductColorCart = cart.filter((p) => p.color == prodColorInput).find((p) => p.id == prodIdInput);        
 
         const fetchPrice = async () => {
+          /**
+           * Fetch for specific products on the API via it's ID defined beyond with closest method to get the dataset values
+           * @param { string } Url
+           * @param { string } prodIdInput
+           * @param { string } prodColorInput
+           */
           priceProduct = await fetch(`http://localhost:3000/api/products/${prodIdInput}`).then(res => res.json()).then((data) => data.price);
         }
 
         function updateQuantityCart() {
+          /**
+           * Defines i as the index of the object we want to update the quantity,
+           * set his quantity from the input value, 
+           * save the cart then resend it to localStorage
+           * @param { string } i 
+           * @param { string } quantity
+           * @param { Array.<object> } 
+           */
           const i = cart.findIndex((p) => p.id == prodIdInput && p.color == prodColorInput);
           cart[i].quantity = e.target.value
           localStorage.products = JSON.stringify(cart);
         }
         
         function deleteQuantity() {
+          /**
+           * Target a product with it's id & color, 
+           * then defines the localCart as every that is not this target then save the localCart, 
+           * send it to localStorage 
+           * and reload the page
+           * @param { Array.<object> }
+           * @param { string } prodIdInput
+           * @param { string } prodColorInput
+           */
           cart = cart.filter((p) => p.id != prodIdInput || p.color != prodColorInput);
           localStorage.products = JSON.stringify(cart);
           location.reload()
         }
 
         function getCartTotalQuantity() {
+          /**
+           * Get localStorage,
+           * for each product adds it's quantity to the itemsQuantity var,
+           * then return result
+           * @param { Array.<object> }
+           * @param { number } quantity
+           * @param { number } itemsQuantity
+           * @return { number } 
+           */
           let cart = JSON.parse(localStorage.getItem('products'));
           let itemsQuantity = 0;
 
@@ -113,6 +176,17 @@ const showCart = async () => {
         }
 
         async function getCartTotalPrice() {  
+          /**
+           * Get localStorage,
+           * for each product : Fetch it's data from the API by it's ID to get it's price
+           * compute the price with it's quantity and set the result to itemsPrice var
+           * then display the price to the user
+           * @param { string } url 
+           * @param { Array.<object> }
+           * @param { number } quantity
+           * @param { number } price
+           * 
+           */
           let cart = JSON.parse(localStorage.getItem('products'));
           let itemsPrice = 0;
           let eachItemPrice = 0;
@@ -127,6 +201,16 @@ const showCart = async () => {
         }
 
         if (foundProductColorCart != undefined) {
+          /**
+           * If product exists, modify it's quantity in the cart Array, send cart to localStorage,
+           * display it's price and quantity,
+           * update totalPrice and totalQuantity values
+           * Also, if quantity is inferior or equal to 0, delete the product from cart and send cart to localStorage
+           * @param { Array.<object> } 
+           * @param { number } priceDisplay
+           * @param { number } quantityDisplay
+           * @param { number } quantity
+           */
           let priceDisplay = e.target.closest(".cart__item__content").querySelector('.cart__item__content__description > p:last-child');         
           let quantityDisplay = e.target.closest(".cart__item__content").querySelector(".cart__item__content__settings > .cart__item__content__settings__quantity > p");
           updateQuantityCart();
@@ -154,6 +238,15 @@ const showCart = async () => {
         let foundProductColorCart = cart.filter((p) => p.color == `${prodColor}`).find((p) => p.id == `${prodId}`);
 
         function deleteProduct() {
+          /**
+           * Target a product with it's id & color, 
+           * then defines the cart as every that is not this target then save the cart, 
+           * send it to localStorage 
+           * and reload the page
+           * @param { Array.<object> }
+           * @param { string } prodId
+           * @param { string } prodColor
+           */
           cart = cart.filter((p) => p.id != prodId || p.color != prodColor);
           localStorage.products = JSON.stringify(cart);
           location.reload()
@@ -177,6 +270,12 @@ const form = document.querySelector('.cart__order__form')
 let firstName, lastName, address, city, email;
 
 const errorDisplay = (tag, message, valid) => {
+  /**
+   * Targets the input with the tag param + ErrorMsg HTML id to add text when conditions ask to
+   * @param { string } tag
+   * @param { string } message
+   * @param { boolean } valid
+   */
   const errorMsg = document.getElementById(tag + 'ErrorMsg');
 
   if (!valid) {
@@ -187,6 +286,14 @@ const errorDisplay = (tag, message, valid) => {
 }
 
 const firstNameChecker = (value) => {
+  /**
+   * Display the error message whenever first name length isn't between 3 to 20 characters and contains specials characters
+   * When conditions are fulfilled, gives firstName var it's input value
+   * @param { string } value
+   * @param { number } value.length
+   * @param { string } firstName
+   * @param { * } REGEX
+   */
   if (value.length > 0 && value.length < 3 || value.length > 20) {
     errorDisplay("firstName", "Le prénom doit faire entre 3 et 20 caractères");
     firstName = null;
@@ -200,6 +307,14 @@ const firstNameChecker = (value) => {
 }
 
 const lastNameChecker = (value) => {
+  /**
+   * Display the error message whenever last name length isn't between 3 to 20 characters and contains specials characters
+   * When conditions are fulfilled, gives lastName var it's input value
+   * * @param { string } value
+   * @param { number } value.length
+   * @param { string } lastName
+   * @param { * } REGEX
+   */
   if (value.length > 0 && value.length < 3 || value.length > 20) {
     errorDisplay("lastName", "Le nom de famille doit faire entre 3 et 20 caractères");
     lastName = null;
@@ -213,6 +328,13 @@ const lastNameChecker = (value) => {
 }
 
 const addressChecker = (value) => {
+  /**
+   * Display the error message whenever address length isn't between 3 to 50 characters
+   * When conditions are fulfilled, gives address var it's input value
+   * * @param { string } value
+   * @param { number } value.length
+   * @param { string } address
+   */
   if (value.length > 0 && value.length < 3 || value.length > 50) {
     errorDisplay("address", "L'adresse doit faire entre 3 et 50 caractères");
     address = null;
@@ -223,6 +345,13 @@ const addressChecker = (value) => {
 }
 
 const cityChecker = (value) => {
+  /**
+   * Display the error message whenever city length isn't between 3 to 20 characters and contains specials characters
+   * When conditions are fulfilled, gives city var it's input value
+   * * @param { string } value
+   * @param { number } value.length
+   * @param { string } city
+   */
   if (value.length > 0 && value.length < 3 || value.length > 20) {
     errorDisplay("city", "Le nom de la ville doit faire entre 3 et 20 caractères");
     city = null;
@@ -236,6 +365,13 @@ const cityChecker = (value) => {
 }
 
 const emailChecker = (value) => {
+  /**
+   * Display the error message whenever email is not a valid email
+   * When conditions are fulfilled, gives firstName var it's input value
+   * * @param { string } value
+   * @param { string } email
+   * @param { * } REGEX
+   */
   if (!value.match(/^[\w_-]+@[\w-]+\.[a-z]{2,4}$/i)) {
     errorDisplay("email", "Le mail n'est pas valide");
     email = null;
@@ -246,6 +382,11 @@ const emailChecker = (value) => {
 }
 
 formInputs.forEach((formInput) => {
+  /**
+   * Call for the function adapted to the input id that is getting used
+   * @param { string, number } e.target.value
+   * @param { string } e.target.id
+   */
   formInput.addEventListener('input', (e) => {
     switch (e.target.id) {
       case "firstName":
@@ -294,20 +435,25 @@ form.addEventListener("submit", (e) => {
 
     body: JSON.stringify({contact, products}),
   };
-
   
   if (firstName && lastName && address && city && email) {
     
     const cartPost = async () => {
+      /**
+       * Checks if the inputs are filled, if so :  
+       * Fetch the API with POST, sending contact object and products array containing id of products ordered, expecting an orderId in response
+       * then redirects the user to the confirmation page
+       * @param { string } Url
+       * @param { object } postData
+       * @param { reponse } dataPost
+       * @param { string } Url
+       */
       dataPost = await fetch("http://localhost:3000/api/products/order", postData);
       
       const dataResponse = await dataPost.json();
-      console.log(dataResponse);
-      console.log(dataResponse.orderId)
       window.location.href=`http://127.0.0.1:5500/front/html/confirmation.html?${dataResponse.orderId}`;
     }
-    cartPost(); 
-    
+    cartPost();     
     
   } else {
     alert('Veuillez remplir correctement les champs')

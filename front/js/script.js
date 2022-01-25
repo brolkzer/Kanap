@@ -3,7 +3,7 @@ const items = document.getElementById("items");
 
 const fetchProducts = async () => {
     /**
-     * Request data from api as a json file
+     * Fetch for all the products listed on the API
      * @param { string } Url
      */
     products = await fetch("http://localhost:3000/api/products").then(res => res.json());
